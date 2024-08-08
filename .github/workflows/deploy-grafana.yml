@@ -43,6 +43,15 @@ jobs:
           exit 1
         fi
 
+    - name: Verify Kubernetes access
+      run: |
+        if kubectl get nodes > /dev/null 2>&1; then
+          echo "Kubernetes cluster is accessible"
+        else
+          echo "Failed to access Kubernetes cluster" >&2
+          exit 1
+        fi
+
     - name: Set up Helm
       uses: azure/setup-helm@v1
       with:
@@ -50,4 +59,4 @@ jobs:
 
     - name: Deploy Grafana from local chart
       run: |
-        helm install grafana ./grafana/charts/grafana --namespace monitoring --create-namespace --set adminPassword=YOUR_ADMIN_PASSWORD
+        helm install grafana ./grafana/charts/grafana --namespace monitoring --create-namespace --set adminPassword=${{ secrets.GRAFANA_ADMIN_PASSWORD }}
