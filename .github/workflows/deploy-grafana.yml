@@ -36,7 +36,7 @@ jobs:
 
     - name: Install kubectl and verify access
       run: |
-        if aws eks update-kubeconfig --region us-east-1 --name YOUR_EKS_CLUSTER_NAME; then
+        if aws eks update-kubeconfig --region us-east-1 --name ${{ secrets.YOUR_EKS_CLUSTER_NAME }}; then
           echo "Kubeconfig updated successfully"
         else
           echo "Failed to update kubeconfig" >&2
