@@ -9,6 +9,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      KUBECTL_VERSION: v1.22.0
+      HELM_VERSION: v3.6.3
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -23,7 +27,7 @@ jobs:
     - name: Set up kubectl
       uses: azure/setup-kubectl@v1
       with:
-        version: v1.22.0
+        version: ${{ env.KUBECTL_VERSION }}
 
     - name: Install kubectl and verify access
       run: |
@@ -34,16 +38,28 @@ jobs:
           exit 1
         fi
 
+    - name: Wait for cluster to be ready
+      run: |
+        kubectl wait --for=condition=Ready nodes --all --timeout=300s
+
     - name: Set up Helm
       uses: azure/setup-helm@v1
       with:
-        version: v3.6.3
+        version: ${{ env.HELM_VERSION }}
 
-    - name: Add Prometheus Helm repository
+    - name: Add and update Prometheus Helm repository
       run: |
         helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-        helm repo update
+        helm repo update || { echo "Failed to update Helm repo" >&2; exit 1; }
+
+    - name: Uninstall existing Prometheus release
+      run: |
+        helm uninstall prometheus || echo "No previous Prometheus release found"
 
     - name: Deploy Prometheus from official repo
       run: |
         helm install prometheus prometheus-community/prometheus
+
+    - name: Verify Prometheus deployment
+      run: |
+        kubectl rollout status deployment/prometheus-server -n default || { echo "Prometheus server deployment failed" >&2; exit 1; }
