@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'prometheus/charts/prometheus/**'
+      - 'prometheus/charts/alertmanager/**'
+      - 'prometheus/charts/kube-state-metrics/**'
+      - 'prometheus/charts/prometheus-node-exporter/**'
+      - 'prometheus/charts/prometheus-pushgateway/**'
+      # Добавьте другие директории, если необходимо
 
 jobs:
   deploy:
