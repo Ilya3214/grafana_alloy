@@ -45,7 +45,7 @@ jobs:
     - name: Set up Helm
       uses: azure/setup-helm@v1
       with:
-        version: ${{ env.HELM_VERSION }}
+        version: v3.12.0
 
     - name: Add and update Prometheus Helm repository
       run: |
