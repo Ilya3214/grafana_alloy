@@ -372,19 +372,16 @@ extraContainerVolumes: []
 persistence:
   type: pvc
   enabled: true
-  # storageClassName: default
+  storageClassName: gp2  # Укажите класс хранилища по умолчанию
   accessModes:
     - ReadWriteOnce
   size: 10Gi
-  # annotations: {}
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "gp2"  # Обозначение класса хранилища в виде аннотации
+    volume.beta.kubernetes.io/provisioner: "kubernetes.io/aws-ebs"  # Укажите провайдер для AWS EBS
+    volume.beta.kubernetes.io/storage-provisioner: "kubernetes.io/aws-ebs"
   finalizers:
     - kubernetes.io/pvc-protection
-  # selectorLabels: {}
-  ## Sub-directory of the PV to mount. Can be templated.
-  # subPath: ""
-  ## Name of an existing PVC. Can be templated.
-  # existingClaim:
-  ## Extra labels to apply to a PVC.
   extraPvcLabels: {}
   disableWarning: false
 
