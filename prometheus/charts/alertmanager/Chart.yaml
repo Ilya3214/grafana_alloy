@@ -21,3 +21,6 @@ annotations:
   "artifacthub.io/links": |
     - name: Chart Source
       url: https://github.com/prometheus-community/helm-charts
+
+
+
