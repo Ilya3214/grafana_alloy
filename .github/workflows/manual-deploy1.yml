@@ -66,11 +66,6 @@ jobs:
         aws eks update-kubeconfig --region us-east-1 --name ${{ env.CLUSTER_NAME }}
         kubectl get nodes
 
-    - name: Set up Helm
-      uses: azure/setup-kubectl@v1
-      with:
-        version: v3.6.3
-
     - name: Install GitHub CLI
       run: |
         sudo apt-get update
@@ -78,9 +73,9 @@ jobs:
 
     - name: Authenticate GitHub CLI
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
       run: |
-        echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+        echo "${{ secrets.GIT_TOKEN }}" | gh auth login --with-token
 
     - name: Run selected workflow
       run: |
