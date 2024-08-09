@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'grafana/**'
 
 jobs:
   deploy:
@@ -59,4 +61,4 @@ jobs:
 
     - name: Deploy Grafana from local chart
       run: |
-        helm upgrade grafana ./grafana/charts/grafana --namespace monitoring --create-namespace --set adminPassword=${{ secrets.GRAFANA_ADMIN_PASSWORD}}
+        helm upgrade --install grafana ./grafana/charts/grafana --namespace monitoring --create-namespace --set adminPassword=${{ secrets.GRAFANA_ADMIN_PASSWORD }}
