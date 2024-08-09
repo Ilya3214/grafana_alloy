@@ -1,0 +1,55 @@
+name: Deploy with Environment Selection
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select the environment'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      kubectl_version:
+        description: 'Select kubectl version'
+        required: true
+        default: 'v1.30.1'
+        type: string
+      helm_version:
+        description: 'Select Helm version'
+        required: true
+        default: 'v3.12.0'
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Set up kubectl
+      uses: actions/setup-kubectl@v1
+      with:
+        version: ${{ github.event.inputs.kubectl_version }}
+
+    - name: Set up Helm
+      uses: azure/setup-helm@v1
+      with:
+        version: ${{ github.event.inputs.helm_version }}
+
+    - name: Deploy to ${{ github.event.inputs.environment }} environment
+      run: |
+        echo "Deploying to environment: ${{ github.event.inputs.environment }}"
+        # Здесь добавьте шаги для деплоя в зависимости от окружения
+        helm upgrade --install my-app ./my-app/charts/my-app --namespace ${{ github.event.inputs.environment }}
