@@ -1,4 +1,4 @@
-name: Deploy with Environment Selection
+name: Deploy to Kubernetes
 
 on:
   workflow_dispatch:
@@ -12,16 +12,15 @@ on:
           - development
           - staging
           - production
-      kubectl_version:
-        description: 'Select kubectl version'
+      selected_workflow:
+        description: 'Select the pipeline to run'
         required: true
-        default: 'v1.30.1'
-        type: string
-      helm_version:
-        description: 'Select Helm version'
-        required: true
-        default: 'v3.12.0'
-        type: string
+        default: 'deploy-prometheus'
+        type: choice
+        options:
+          - deploy-prometheus
+          - deploy-grafana
+          - deploy-eks
 
 jobs:
   deploy:
@@ -31,25 +30,68 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Set environment variables based on selected environment
+      run: |
+        if [ "${{ github.event.inputs.environment }}" == "production" ]; then
+          echo "ENVIRONMENT=production" >> $GITHUB_ENV
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "CLUSTER_NAME=${{ secrets.CLUSTER_NAME }}" >> $GITHUB_ENV
+        elif [ "${{ github.event.inputs.environment }}" == "staging" ]; then
+          echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.STAGING_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "CLUSTER_NAME=${{ secrets.STAGING_CLUSTER_NAME }}" >> $GITHUB_ENV
+        else
+          echo "ENVIRONMENT=development" >> $GITHUB_ENV
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.DEV_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "CLUSTER_NAME=${{ secrets.DEV_CLUSTER_NAME }}" >> $GITHUB_ENV
+        fi
+
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
     - name: Set up kubectl
       uses: actions/setup-kubectl@v1
       with:
-        version: ${{ github.event.inputs.kubectl_version }}
+        version: v1.30.1
+
+    - name: Update kubeconfig and verify access
+      run: |
+        aws eks update-kubeconfig --region us-east-1 --name ${{ env.CLUSTER_NAME }}
+        kubectl get nodes
 
     - name: Set up Helm
       uses: azure/setup-helm@v1
       with:
-        version: ${{ github.event.inputs.helm_version }}
+        version: v3.12.0
 
-    - name: Deploy to ${{ github.event.inputs.environment }} environment
+    - name: Install GitHub CLI
       run: |
-        echo "Deploying to environment: ${{ github.event.inputs.environment }}"
-        # Здесь добавьте шаги для деплоя в зависимости от окружения
-        helm upgrade --install my-app ./my-app/charts/my-app --namespace ${{ github.event.inputs.environment }}
+        sudo apt-get update
+        sudo apt-get install gh -y
+
+    - name: Authenticate GitHub CLI
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+    - name: Run selected workflow
+      run: |
+        if [ "${{ github.event.inputs.selected_workflow }}" == "deploy-prometheus" ]; then
+          echo "Running Deploy Prometheus pipeline"
+          helm upgrade --install prometheus ./prometheus/charts/prometheus --namespace monitoring --create-namespace
+        elif [ "${{ github.event.inputs.selected_workflow }}" == "deploy-grafana" ]; then
+          echo "Running Deploy Grafana pipeline"
+          helm upgrade --install grafana ./grafana/charts/grafana --namespace monitoring --create-namespace
+        elif [ "${{ github.event.inputs.selected_workflow }}" == "deploy-eks" ]; then
+          echo "Running Deploy EKS pipeline"
+          # Здесь добавьте команду для деплоя вашего EKS кластера, если она у вас есть.
+        else
+          echo "No matching workflow found"
