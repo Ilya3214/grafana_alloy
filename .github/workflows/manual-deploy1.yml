@@ -87,6 +87,7 @@ jobs:
           helm upgrade --install grafana ./grafana/charts/grafana --namespace monitoring --create-namespace
         elif [ "${{ github.event.inputs.selected_workflow }}" == "deploy-eks" ]; then
           echo "Running Deploy EKS pipeline"
-          # Здесь добавьте команду для деплоя вашего EKS кластера, если она у вас есть.
+    # Здесь добавьте команду для деплоя вашего EKS кластера, если она у вас есть.
         else
           echo "No matching workflow found"
+        fi
