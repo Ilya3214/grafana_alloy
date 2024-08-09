@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'prometheus/charts/**'  # Запускать пайплайн только при изменениях в папке charts
 
 jobs:
   deploy:
@@ -46,7 +48,7 @@ jobs:
     - name: Set up Helm
       uses: azure/setup-helm@v1
       with:
-        version: v3.12.0
+        version: v3.30.1
 
     - name: Update Helm dependencies
       run: |
