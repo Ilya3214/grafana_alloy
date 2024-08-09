@@ -49,23 +49,6 @@ jobs:
           echo "CLUSTER_NAME=${{ secrets.DEV_CLUSTER_NAME }}" >> $GITHUB_ENV
         fi
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
-
-    - name: Set up kubectl
-      uses: azure/setup-kubectl@v1
-      with:
-        version: v1.22.0
-
-    - name: Update kubeconfig and verify access
-      run: |
-        aws eks update-kubeconfig --region us-east-1 --name ${{ env.CLUSTER_NAME }}
-        kubectl get nodes
-
     - name: Install GitHub CLI
       run: |
         sudo apt-get update
@@ -80,13 +63,13 @@ jobs:
     - name: Run selected workflow
       run: |
         if [ "${{ github.event.inputs.selected_workflow }}" == "deploy-prometheus" ]; then
-          echo "Running Deploy Prometheus pipeline"
-          helm upgrade --install prometheus ./prometheus/charts/prometheus --namespace monitoring --create-namespace
+          echo "Running Deploy Prometheus workflow"
+          gh workflow run deploy-prometheus.yml
         elif [ "${{ github.event.inputs.selected_workflow }}" == "deploy-grafana" ]; then
-          echo "Running Deploy Grafana pipeline"
-          helm upgrade --install grafana ./grafana/charts/grafana --namespace monitoring --create-namespace
+          echo "Running Deploy Grafana workflow"
+          gh workflow run deploy-grafana.yml
         elif [ "${{ github.event.inputs.selected_workflow }}" == "deploy-eks" ]; then
-          echo "Running Deploy EKS pipeline"
+          echo "Running Deploy EKS workflow"
           # Здесь добавьте команду для деплоя вашего EKS кластера, если она у вас есть.
         else
           echo "No matching workflow found"
