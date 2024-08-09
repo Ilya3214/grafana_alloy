@@ -59,4 +59,4 @@ jobs:
 
     - name: Deploy Grafana from local chart
       run: |
-        helm install grafana ./grafana/charts/grafana --namespace monitoring --create-namespace --set adminPassword=${{ secrets.GRAFANA_ADMIN_PASSWORD}}
+        helm upgrade grafana ./grafana/charts/grafana --namespace monitoring --create-namespace --set adminPassword=${{ secrets.GRAFANA_ADMIN_PASSWORD}}
