@@ -1,0 +1,40 @@
+name: Deploy to Minikube
+
+on:
+  workflow_dispatch:
+    inputs:
+      selected_deployment:
+        description: 'Select the deployment'
+        required: true
+        default: 'deploy-prometheus'
+        type: choice
+        options:
+          - deploy-prometheus
+          - deploy-grafana
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup kubectl for Minikube
+      run: |
+        # Настройка доступа к локальному Minikube
+        echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+        kubectl config set-cluster minikube --server=http://<104.28.104.103>:8080 --insecure-skip-tls-verify=true
+        kubectl config set-context minikube
+        kubectl config use-context minikube
+
+    - name: Deploy selected application to Minikube
+      run: |
+        if [ "${{ github.event.inputs.selected_deployment }}" == "deploy-prometheus" ]; then
+          echo "Deploying Prometheus to Minikube"
+          kubectl apply -f path/to/your/prometheus/manifests
+        elif [ "${{ github.event.inputs.selected_deployment }}" == "deploy-grafana" ]; then
+          echo "Deploying Grafana to Minikube"
+          kubectl apply -f path/to/your/grafana/manifests
+        else
+          echo "No matching deployment found"
