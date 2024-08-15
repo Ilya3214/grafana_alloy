@@ -27,14 +27,14 @@ jobs:
 
         # Настройка доступа к локальному Minikube с использованием IPv6
         echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
-        kubectl config set-cluster minikube --server=http://[2600:1700:5a30:63c0:610e:baf6:485e:c5b0]:8080 --insecure-skip-tls-verify=true
+        kubectl config set-cluster minikube --server=https://99.56.14.113:8089 --insecure-skip-tls-verify=true
         kubectl config set-context minikube
         kubectl config use-context minikube
 
     - name: Verify Minikube Authentication
       run: |
         echo "Verifying Minikube connection..."
-        kubectl get nodes
+        kubectl --server=https://99.56.14.113:8089 --insecure-skip-tls-verify get nodes
 
     - name: Install GitHub CLI
       run: |
