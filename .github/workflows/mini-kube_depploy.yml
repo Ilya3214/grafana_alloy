@@ -39,5 +39,5 @@ jobs:
         elif [ "${{ github.event.inputs.selected_workflow }}" == "deploy-grafana" ]; then
           echo "Running Deploy Grafana workflow"
           gh workflow run deploy-grafana.yml
-        else
-          echo "No matching deployment found"
+          echo "No matching workflow found"
+        fi
