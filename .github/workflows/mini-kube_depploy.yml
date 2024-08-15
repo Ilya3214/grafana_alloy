@@ -31,6 +31,18 @@ jobs:
         kubectl config set-context minikube
         kubectl config use-context minikube
 
+    - name: Install GitHub CLI
+      run: |
+        sudo apt-get update
+        sudo apt-get install gh -y
+
+    - name: Authenticate GitHub CLI
+      env:
+        GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+      run: |
+        echo "${{ secrets.GIT_TOKEN }}" | gh auth login --with-token
+
+
     - name: Run selected workflow
       run: |
         if [ "${{ github.event.inputs.selected_workflow }}" == "deploy-prometheus" ]; then
