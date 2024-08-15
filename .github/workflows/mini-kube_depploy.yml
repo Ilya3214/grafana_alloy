@@ -25,9 +25,9 @@ jobs:
         # Создание директории для kubeconfig
         mkdir -p $HOME/.kube
 
-        # Настройка доступа к локальному Minikube
+        # Настройка доступа к локальному Minikube с использованием IPv6
         echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
-        kubectl config set-cluster minikube --server=http://104.28.104.103:8080 --insecure-skip-tls-verify=true
+        kubectl config set-cluster minikube --server=http://[2600:1700:5a30:63c0:610e:baf6:485e:c5b0]:8080 --insecure-skip-tls-verify=true
         kubectl config set-context minikube
         kubectl config use-context minikube
 
