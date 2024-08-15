@@ -36,25 +36,31 @@ jobs:
         echo "Verifying Minikube connection..."
         kubectl --server=https://99.56.14.113:8089 --insecure-skip-tls-verify get nodes
 
-    - name: Install GitHub CLI
+    - name: Install Helm
+      run: |
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+    - name: Install GitHub CLI (for Prometheus deployment)
+      if: ${{ github.event.inputs.selected_workflow == 'deploy-prometheus' }}
       run: |
         sudo apt-get update
         sudo apt-get install gh -y
 
-    - name: Authenticate GitHub CLI
+    - name: Authenticate GitHub CLI (for Prometheus deployment)
+      if: ${{ github.event.inputs.selected_workflow == 'deploy-prometheus' }}
       env:
         GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
       run: |
         echo "${{ secrets.GIT_TOKEN }}" | gh auth login --with-token
 
-    - name: Run selected workflow
+    - name: Deploy Grafana using Helm
+      if: ${{ github.event.inputs.selected_workflow == 'deploy-grafana' }}
       run: |
-        if [ "${{ github.event.inputs.selected_workflow }}" == "deploy-prometheus" ]; then
-          echo "Running Deploy Prometheus workflow"
-          gh workflow run deploy-prometheus.yml
-        elif [ "${{ github.event.inputs.selected_workflow }}" == "deploy-grafana" ]; then
-          echo "Running Deploy Grafana workflow"
-          gh workflow run deploy-grafana.yml --log
-        else
-          echo "No matching workflow found"
-        fi
+        helm upgrade --install grafana ./grafana/charts/grafana \
+        --namespace monitoring --create-namespace \
+        --set adminPassword=${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+
+    - name: Run selected Prometheus workflow
+      if: ${{ github.event.inputs.selected_workflow == 'deploy-prometheus' }}
+      run: |
+        gh workflow run deploy-prometheus.yml --log
