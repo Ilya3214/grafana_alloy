@@ -54,7 +54,7 @@ jobs:
           gh workflow run deploy-prometheus.yml
         elif [ "${{ github.event.inputs.selected_workflow }}" == "deploy-grafana" ]; then
           echo "Running Deploy Grafana workflow"
-          gh workflow run deploy-grafana.yml
+          gh workflow run deploy-grafana.yml --log
         else
           echo "No matching workflow found"
         fi
