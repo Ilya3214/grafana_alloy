@@ -372,12 +372,12 @@ extraContainerVolumes: []
 persistence:
   type: pvc
   enabled: true
-  storageClassName: standart  # Укажите класс хранилища по умолчанию gp2
+  storageClassName: standard  # Укажите класс хранилища по умолчанию gp2
   accessModes:
     - ReadWriteOnce
   size: 10Gi
   annotations:
-    volume.beta.kubernetes.io/storage-class: "standart"  # Обозначение класса хранилища в виде аннотации
+    volume.beta.kubernetes.io/storage-class: "standard"  # Обозначение класса хранилища в виде аннотации
     volume.beta.kubernetes.io/provisioner: "kubernetes.io/aws-ebs"  # Укажите провайдер для AWS EBS
     volume.beta.kubernetes.io/storage-provisioner: "kubernetes.io/aws-ebs"
   finalizers:
