@@ -31,6 +31,11 @@ jobs:
         kubectl config set-context minikube
         kubectl config use-context minikube
 
+    - name: Verify Minikube Authentication
+      run: |
+        echo "Verifying Minikube connection..."
+        kubectl get nodes
+
     - name: Install GitHub CLI
       run: |
         sudo apt-get update
@@ -42,7 +47,6 @@ jobs:
       run: |
         echo "${{ secrets.GIT_TOKEN }}" | gh auth login --with-token
 
-
     - name: Run selected workflow
       run: |
         if [ "${{ github.event.inputs.selected_workflow }}" == "deploy-prometheus" ]; then
@@ -51,5 +55,6 @@ jobs:
         elif [ "${{ github.event.inputs.selected_workflow }}" == "deploy-grafana" ]; then
           echo "Running Deploy Grafana workflow"
           gh workflow run deploy-grafana.yml
+        else
           echo "No matching workflow found"
         fi
