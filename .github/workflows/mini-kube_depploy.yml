@@ -22,9 +22,12 @@ jobs:
 
     - name: Setup kubectl for Minikube
       run: |
+        # Создание директории для kubeconfig
+        mkdir -p $HOME/.kube
+
         # Настройка доступа к локальному Minikube
         echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
-        kubectl config set-cluster minikube --server=http://<104.28.104.103>:8080 --insecure-skip-tls-verify=true
+        kubectl config set-cluster minikube --server=http://104.28.104.103:8080 --insecure-skip-tls-verify=true
         kubectl config set-context minikube
         kubectl config use-context minikube
 
@@ -38,3 +41,4 @@ jobs:
           kubectl apply -f path/to/your/grafana/manifests
         else
           echo "No matching deployment found"
+        fi
