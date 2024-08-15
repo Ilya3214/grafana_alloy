@@ -3,7 +3,7 @@ name: Deploy to Minikube
 on:
   workflow_dispatch:
     inputs:
-      selected_deployment:
+      selected_workflow:
         description: 'Select the deployment'
         required: true
         default: 'deploy-prometheus'
@@ -31,14 +31,13 @@ jobs:
         kubectl config set-context minikube
         kubectl config use-context minikube
 
-    - name: Deploy selected application to Minikube
+    - name: Run selected workflow
       run: |
-        if [ "${{ github.event.inputs.selected_deployment }}" == "deploy-prometheus" ]; then
-          echo "Deploying Prometheus to Minikube"
-          kubectl apply -f path/to/your/prometheus/manifests
-        elif [ "${{ github.event.inputs.selected_deployment }}" == "deploy-grafana" ]; then
-          echo "Deploying Grafana to Minikube"
-          kubectl apply -f path/to/your/grafana/manifests
+        if [ "${{ github.event.inputs.selected_workflow }}" == "deploy-prometheus" ]; then
+          echo "Running Deploy Prometheus workflow"
+          gh workflow run deploy-prometheus.yml
+        elif [ "${{ github.event.inputs.selected_workflow }}" == "deploy-grafana" ]; then
+          echo "Running Deploy Grafana workflow"
+          gh workflow run deploy-grafana.yml
         else
           echo "No matching deployment found"
-        fi
